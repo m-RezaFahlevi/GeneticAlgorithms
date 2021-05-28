@@ -1,3 +1,10 @@
+# Author        :   Muhammad Reza Fahlevi
+# Affiliation   :   Departemen Ilmu Komputer,
+#                   Fakultas Ilmu Komputer - Teknologi Informasi,
+#                   Universitas Sumatera Utara, Indonesia
+# References    :   García-Martínez C., Rodriguez F.J., Lozano M. (2018) Genetic Algorithms. In: Martí R., Pardalos P., Resende M. (eds) Handbook of Heuristics. Springer, Cham. https://doi.org/10.1007/978-3-319-07124-4_28
+
+
 library(ggplot2) # import library for data visualization
 
 phi <- function(x, y) exp(-0.5 * (x ** 2) + (y ** 2))
