@@ -115,7 +115,7 @@ NP <- 10
 Pm <- 0.3
 MAX_GENERATION <- 10
 
-steady_state_genetic_algorithm(10, Pm, MAX_GENERATION)
+steady_state_genetic_algorithm(NP, Pm, MAX_GENERATION)
 
 result <- c(0.8503840, 0.9855303, 0.9983927, 0.9983927, 0.9996629,
             0.9997525, 0.9999375, 0.9999664, 0.9999841, 0.9999884)
