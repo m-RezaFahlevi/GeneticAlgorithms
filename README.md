@@ -9,4 +9,4 @@ install.packages(c("ggplot2", "dplyr"))
 ```
 Following image is objective function (a.k.a. fitness function) and  steady-state Genetic-Algorithm (steady-state GA) return {(x, y) | x,y ~ max[f(x,y)]}
 
-![](www/standardnormaldistribution.png)
+![](https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/www/standardnormaldistribution.png)
