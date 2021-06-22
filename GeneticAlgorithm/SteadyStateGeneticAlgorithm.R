@@ -6,173 +6,122 @@
 
 
 library(ggplot2) # import library for data visualization
+library(dplyr)
 
-phi <- function(x, y) exp(-0.5 * (x ** 2) + (y ** 2))
-
-# some value of phi(x,y) for 0 <= x = y <= 0.5
-phi(seq(0, 0.5, 0.05), seq(0, 0.5, 0.05))
-
-xgen <- runif(7, min = -1, max = 1)
-ygen <- runif(7, min = -1, max = 1)
-popdf <- data.frame("xgenotype" = xgen, "ygenotype" = ygen, "fitness" = phi(xgen, ygen))
-popdf
-
-dd <- transform(popdf, fitness = factor(popdf$fitness))
-popdfsorted <- dd[ do.call(order, dd["fitness"]), ]
-popdfsorted
-
-SIGMA <- sum(popdf$fitness)
-popdfsorted["pvalue"] <- phi(popdfsorted$xgenotype, popdfsorted$ygenotype) / SIGMA
-popdfsorted
-
-# Create Data
-data <- data.frame(
-    group=paste(popdfsorted$pvalue * 100),
-    value= popdfsorted$pvalue
-)
-
-# Basic piechart
-ggplot(data, aes(x="", y=value, fill=group)) +
-    geom_bar(stat="identity", width=1, color="white") +
-    coord_polar("y", start=0) +
-    theme_void() + ggtitle("Roulette-Wheel Selection")
-
-# Create roulette-wheel function
-roulette <- function(popdframe) {
-    rouletteWheel <- runif(1, min = min(popdframe$pvalue), 
-                           max = max(popdframe$pvalue))
-    if (rouletteWheel > 0 && rouletteWheel <= popdframe$pvalue[1]) {
-        parent <- c(popdframe$xgenotype[1], popdframe$ygenotype[1])
-    } else if (rouletteWheel > popdframe$pvalue[1] && rouletteWheel <= popdframe$pvalue[2]) {
-        parent <- c(popdframe$xgenotype[2], popdframe$ygenotype[2])
-    } else if (rouletteWheel > popdframe$pvalue[2] && rouletteWheel <= popdframe$pvalue[3]) {
-        parent <- c(popdframe$xgenotype[3], popdframe$ygenotype[3])
-    } else if (rouletteWheel > popdframe$pvalue[3] && rouletteWheel <= popdframe$pvalue[4]) {
-        parent <- c(popdframe$xgenotype[4], popdframe$ygenotype[4])
-    } else if (rouletteWheel > popdframe$pvalue[4] && rouletteWheel <= popdframe$pvalue[5]) {
-        parent <- c(popdframe$xgenotype[5], popdframe$ygenotype[5])
-    } else if (rouletteWheel > popdframe$pvalue[5] && rouletteWheel <= popdframe$pvalue[6]) {
-        parent <- c(popdframe$xgenotype[6], popdframe$ygenotype[6])
-    } else if (rouletteWheel > popdframe$pvalue[6] && rouletteWheel <= popdframe$pvalue[7]) {
-        parent <- c(popdframe$xgenotype[7], popdframe$ygenotype[7])
-    }
-    # print(rouletteWheel)
-    return(parent)
+phi <- function(x, y) {
+    exp(-0.5 * ((x ** 2) + (y ** 2))) %>% return()
 }
 
-# Select two chromosome
-selection <- function(popdataframe) {
-    stparents <- roulette(popdataframe)
-    ndparents <- roulette(popdataframe)
-    chromosomes <- matrix(c(stparents, ndparents),
-                          nrow = 2, ncol = 2, byrow = TRUE)
-    return(chromosomes)
+config_df <- function(x_vect, y_vect) {
+    phi_vect <- phi(x_vect, y_vect)
+    dframe <- tibble(x_vect, y_vect, phi_vect)
+    dframe %>%
+        arrange(phi_vect) %>%
+        slice(2:10) %>%
+        return()
 }
 
-# Crossover: PBX-\alpha method
-pbxalpha <- function(selMat, constAlpha, stDomain, ndDomain) {
-    stI <- abs(selMat[1, 1] - selMat[2, 1])
-    ndI <- abs(selMat[1, 2] - selMat[2, 2])
-    p11 <- max(stDomain[1], min(selMat[1, 1], selMat[2, 1]) - (constAlpha * stI))
-    p12 <- min(stDomain[2], max(selMat[1, 1], selMat[2, 1]) + (constAlpha * stI))
-    p21 <- max(ndDomain[1], min(selMat[1, 2], selMat[2, 2]) - (constAlpha * ndI))
-    p22 <- min(ndDomain[2], max(selMat[1, 2], selMat[2, 2]) + (constAlpha * ndI))
-    crossover <- matrix(c(p11, p12, p21, p22), nrow = 2, ncol = 2, byrow = TRUE)
-    return(crossover)
+tournament <- function(df_pop) {
+    df_pop %>%
+        slice_sample(n = 4) %>%
+        slice_max(order_by = phi_vect, n = 2) %>%
+        return()
 }
-offspring <- pbxalpha(selectedMatrix, runif(1, min = 0.01, max = 0.99), 
-                      stDomain = c(0.01, 0.99), ndDomain = c(0.01, 0.99))
-offspring
 
-# Mutation function
-computedGamma <- function(tCurrent, tMax, constBeta) (1 - (tCurrent / tMax)) ** constBeta
-computedDelta <- function(theDomain, theVar, constGamma) {
-    deltaVect <- c()
-    for (i in seq(1, 2)) {
-        drawProbability <- runif(1)
-        stOutcome <- (theDomain[1] - theVar[i]) * (1 - runif(1)) ** constGamma
-        ndOutcome <- (theDomain[2] - theVar[i]) * (1 - runif(1)) ** constGamma
-        ifelse(drawProbability == (1 / 2),
-               deltaVect <- append(deltaVect, stOutcome),
-               deltaVect <- append(deltaVect, ndOutcome))
-    }
-    return(deltaVect)
+pbxalpha <- function(domain_interval, p1, p2, alpha) {
+    constant <- (p1["x_vect"] - p2["x_vect"]) %>% abs() %>% max()
+    p1_lower_bound <- (p1["x_vect"] - (alpha * constant)) %>% max(domain_interval[1])
+    p1_upper_bound <- (p1["x_vect"] + (alpha * constant)) %>% min(domain_interval[2])
+    
+    constant <- (p1["y_vect"] - p2["y_vect"]) %>% abs() %>% max()
+    p2_lower_bound <- (p2["y_vect"] - (alpha * constant)) %>% max(domain_interval[1])
+    p2_upper_bound <- (p2["y_vect"] + (alpha * constant)) %>% min(domain_interval[2])
+    
+    p1_offspring <- c(p1_lower_bound, p1_upper_bound)
+    p2_offspring <- c(p2_lower_bound, p2_upper_bound)
+    
+    p1_offspring %>%
+        c(p2_offspring) %>%
+        matrix(nrow = 2, ncol = 2, byrow = TRUE) %>%
+        return()
 }
-mutation <- function(varDelta, varX) varDelta + varX
 
-# is mutation occur? function
-ismutate <- function(toOffspring, mutationProbability, maxgeneration) {
-    mutationChance <- runif(1)
-    if (mutationChance < MUTATIONRATE) {
-        compGamma <- computedGamma(tCurrent = 1, tMax = maxgeneration, constBeta = 3)
-        stCompDelta <- computedDelta(theDomain = c(0.01, 0.99), 
-                                     theVar = offspring[1,], constGamma = compGamma)
-        ndCompDelta <- computedDelta(theDomain = c(0.01, 0.99), 
-                                     theVar = offspring[2,], constGamma = compGamma)
-        stCompMutation <- mutation(stCompDelta, offspring[1,])
-        ndCompMutation <- mutation(ndCompDelta, offspring[2,])
-        compMutation <- matrix(c(stCompMutation, ndCompMutation),
-                               nrow = 2, ncol = 2, byrow = TRUE)
-        return(compMutation)
+gamma_ <- function(t, tmax, beta) (1 - (t / tmax)) ** beta
+
+delta <- function(domain_interval, genotype, computed_gamma) {
+    get_probability <- runif(1)
+    probability_criteria <- 0.5
+    normvar <- runif(1)
+    if (get_probability == probability_criteria) {
+        delta_value <- (domain_interval[2] - genotype) * ((1 - normvar) ** computed_gamma)
     } else {
-        return(offspring)
+        delta_value <- (domain_interval[1] - genotype) * ((1 - normvar) ** computed_gamma)
     }
+    delta_value %>% return()
 }
 
-
-# Define the constant
-NP <- 7
-MAXGENERATION <- 50
-MUTATIONRATE <- 0.3
-STDOMAIN <- c(-0.99, 0.99)
-NDDOMAIN <- c(-0.99, 0.99) 
-
-# Repeat the process until stop criterea is found
-generations[[1]] <- popdf
-for (numberGeneration in seq(1, MAXGENERATION)) {
-    xgenvect <- c()
-    ygenvect <- c()
-    while (length(xgenvect) < NP) {
-        # Config the population
-        workingPopulation <- generations[[numberGeneration]]
-        dd <- transform(workingPopulation, 
-                        fitness = factor(workingPopulation$fitness))
-        workingPopulationSorted <- dd[ do.call(order, dd["fitness"]), ]
+steady_state_genetic_algorithm <- function(population_size, mutation_probability, max_generation) {
+    fitness <- c()
+    x_vector <- runif(n = population_size) %>% c()
+    y_vector <- runif(n = population_size) %>% c()
+    
+    for (generation in seq(1, max_generation)) {
+        df_population <- config_df(x_vector, y_vector)
+        df_population %>% print()
+        fitness[generation] <- df_population[population_size - 1, 3] %>% max() # record the best
+        x_vector <- c() # start a new population
+        y_vector <- c()
+        x_vector <- x_vector %>% append(df_population[population_size - 1, 1] %>% max()) # add the fittest to the next generation
+        y_vector <- y_vector %>% append(df_population[population_size - 1, 2] %>% max())
         
-        SIGMA <- sum(workingPopulation$fitness)
-        workingPopulationSorted["pvalue"] <- phi(workingPopulationSorted$xgenotype, workingPopulationSorted$ygenotype) / SIGMA
-        
-        # Selection
-        selectIndividu <- selection(workingPopulationSorted)
-        
-        # Crossover
-        getOffspring <- pbxalpha(selectIndividu,
-                                 constAlpha = runif(1, min = 0.01, max = 0.99),
-                                 stDomain = STDOMAIN, ndDomain = NDDOMAIN)
-        # Mutation
-        getOff <- ismutate(toOffspring = getOffspring,
-                           mutationProbability = MUTATIONRATE,
-                           maxgeneration = MAXGENERATION)
-        
-        # calculation the fitness by using the objective function
-        stCalc <- phi(getOff[1, 1], getOff[1, 2])
-        ndCalc <- phi(getOff[2, 1], getOff[2, 2])
-        if (stCalc > ndCalc) {
-            xgenvect <- append(xgenvect, getOff[1, 1])
-            ygenvect <- append(ygenvect, getOff[1, 2])
-        } else {
-            xgenvect <- append(xgenvect, getOff[2, 1])
-            ygenvect <- append(ygenvect, getOff[2, 2])
+        vect_size <- length(x_vector)
+        while (vect_size != population_size) {
+            winner <- tournament(df_population)
+            p1 <- winner[1,]
+            p2 <- winner[2,]
+            offsprings <- pbxalpha(problem_interval, p1, p2, alpha = 0.5)
+            current_mutation_rate <- runif(1)
+            if (current_mutation_rate < mutation_probability) {
+                p11 <- offsprings[1, 1] + delta(problem_interval, 
+                                               offsprings[1, 1], gamma_(generation, max_generation, beta = 9))
+                p12 <- offsprings[1, 2] + delta(problem_interval,
+                                                offsprings[1, 2], gamma_(generation, max_generation, beta = 9))
+                p21 <- offsprings[2, 1] + delta(problem_interval,
+                                                offsprings[2, 1], gamma_(generation, max_generation, beta = 9))
+                p22 <- offsprings[2, 2] + delta(problem_interval,
+                                                offsprings[2, 2], gamma_(generation, max_generation, beta = 9))
+                offsprings <- c(p11, p12, p21, p22) %>%
+                    matrix(nrow = 2, ncol = 2, byrow = TRUE)
+            }
+            first_value <- offsprings[1, 1] %>% phi(offsprings[1, 2])
+            second_value <- offsprings[2, 1] %>% phi(offsprings[2, 2])
+            survivor <- c()
+            if (first_value > second_value) {
+                survivor <- offsprings[1, 1] %>% c(offsprings[1, 2])
+            } else {
+                survivor <- offsprings[2, 1] %>% c(offsprings[2, 2])
+            }
+            x_vector <- x_vector %>% append(survivor[1])
+            y_vector <- y_vector %>% append(survivor[2])
+            vect_size <- vect_size + 1
         }
     }
-    getNewPopulation <- data.frame("xgenotype" = xgenvect,
-                                   "ygenotype" = ygenvect,
-                                   "fitness" = phi(xgenvect, ygenvect))
-    generations[[numberGeneration + 1]] <- getNewPopulation
+    fitness %>% return()
 }
 
-# print the last 10 generation
-for (n in seq(MAXGENERATION - 10, MAXGENERATION)) {
-    print(n)
-    print(generations[[n]])
-}
+# define the parameter
+problem_interval <- c(-5, 5)
+NP <- 10
+Pm <- 0.3
+MAX_GENERATION <- 10
+
+steady_state_genetic_algorithm(10, Pm, MAX_GENERATION)
+
+result <- c(0.8503840, 0.9855303, 0.9983927, 0.9983927, 0.9996629,
+            0.9997525, 0.9999375, 0.9999664, 0.9999841, 0.9999884)
+idx <- seq(1, MAX_GENERATION)
+
+df_result <- data.frame("generation" = idx, "fitness_value" = result)
+
+plt <- ggplot(df_result, mapping = aes(generation, fitness_value)) + geom_line(color = "blue") + geom_point(color = "darkblue")
+plt
