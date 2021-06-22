@@ -7,10 +7,6 @@ For file SteadyStateGeneticAlgorithm.R, there are 2 library must be installed fi
 ```{r}
 install.packages(c("ggplot2", "dplyr"))
 ```
-Following image is objective function (a.k.a. fitness function) and  steady-state Genetic-Algorithm (steady-state GA) return 
-
-$$
-{(x, y) | x,y \sim \max\[f(x,y)\]}
-$$
+Following image is objective function (a.k.a. fitness function) and  steady-state Genetic-Algorithm (steady-state GA) return $f(x)$
 
 ![](www/standardnormaldistribution.png)
