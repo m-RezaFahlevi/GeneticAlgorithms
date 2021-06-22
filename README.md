@@ -10,3 +10,7 @@ install.packages(c("ggplot2", "dplyr"))
 Following image is objective function (a.k.a. fitness function) and  steady-state Genetic-Algorithm (steady-state GA) return {(x, y) | x,y ~ max[f(x,y)]}
 
 ![](https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/www/standardnormaldistribution.png)
+
+When the execution of file SteadyStateGeneticAlgorithm.R is finish, it's show that max[f(x,y)] if and only if x,y = 0.
+
+![](https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/www/RplotResult.png)
