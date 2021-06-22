@@ -9,6 +9,6 @@ install.packages(c("ggplot2", "dplyr"))
 ```
 Following image is objective function (a.k.a. fitness function) and  steady-state Genetic-Algorithm (steady-state GA) return 
 $$
-\left\{(x, y) | x,y \sim \max\[f(x,y)\] \right\}
+\{(x, y) | x,y \sim \max\[f(x,y)\] \}
 $$
 ![](www/standardnormaldistribution.png)
