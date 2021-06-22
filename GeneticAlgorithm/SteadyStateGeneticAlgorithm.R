@@ -115,10 +115,9 @@ NP <- 10
 Pm <- 0.3
 MAX_GENERATION <- 10
 
-steady_state_genetic_algorithm(NP, Pm, MAX_GENERATION)
+result <- steady_state_genetic_algorithm(NP, Pm, MAX_GENERATION)
+result
 
-result <- c(0.8503840, 0.9855303, 0.9983927, 0.9983927, 0.9996629,
-            0.9997525, 0.9999375, 0.9999664, 0.9999841, 0.9999884)
 idx <- seq(1, MAX_GENERATION)
 
 df_result <- data.frame("generation" = idx, "fitness_value" = result)
