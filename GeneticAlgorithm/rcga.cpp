@@ -1,41 +1,76 @@
-/*
- * Steady State Genetic Algorithm
- * Author: Muhammad Reza Fahlevi
+/* Real Code Genetic Algorithm for
+ * Solving Real Parameter Optimization Problem
+ *
+ * Author	: Muhammad Reza Fahlevi
+ * Email	: muhammadrezafahlevi666@gmail.com
+ * GitHub	: https://github.com/m-RezaFahlevi
+ * Dated	: 9th January 2023
+ *
  * Problem:
  * 	arg min spherefun(x, y)
  * 	s.t. x = (l1, u1); y = (l2, y2)
  *
+ * References:
+ * [1] García-Martínez, C., Rodriguez, F.J., Lozano, M. (2018). 
+ * Genetic Algorithms. In: Martí, R., Pardalos, P., Resende, M. (eds) Handbook of Heuristics. 
+ * Springer, Cham. https://doi.org/10.1007/978-3-319-07124-4_28
+ *
+ * [2] Artificial Intelligence: A Modern Approach, Third Edition, ISBN 9780136042594, 
+ * by Stuart J. Russell and Peter Norvig published by Pearson Education © 2010.
+ *
+ * [3] Sean Luke, 2013, Essentials of Metaheuristics, Lulu, second edition,
+ * available at http://cs.gmu.edu/∼sean/book/metaheuristics/ 
+ *
+ * [4] Körner, T.W. 2013. Vectors, pure and applied : a general introduction to linear algebra. 
+ * Cambridge. Cambridge University Press.
+ *
+ * [5] Peter Gottschling. 2022. Discovering Modern C++: An Intensive Course for 
+ * Scientists, Engineers, and Programmers (second edition). Pearson Education, Inc.
+ *
+ * [6] Bjarne Stroustrup. 2018. A Tour of C++ (second edition). Pearson Education, Inc.
+ *
+ * [7] https://www.cplusplus.com/
+ *
  */
 #include <bits/stdc++.h>
 #include <chrono>
-#define MU 0.0
-#define STDEV 1.0
 #define NPOPULATION 15
 #define ALPHA 0.85
+#define MUTATION_PROBABILITY 0.78
 #define BETA 0.67
-#define MAX_GENERATION 50
+#define MAX_GENERATION 500
 #define N_DIMENSION 2
 using namespace std;
 
+/* Set seed that will be used as a generator in
+ * pseudo random number generator (PRNG) function.
+ */
 const int seed = chrono::system_clock::now().time_since_epoch().count();
 mt19937 generator(seed);
 
-normal_distribution<double> rnorm(MU, STDEV);
-
+/* runif stand for (discrete) random uniform, it is
+ * PRNG that return an integer number range from
+ * at_least to at_most.
+ */
 int runif(int at_least, int at_most) {
 	uniform_int_distribution<int> randint(at_least, at_most);
 	return randint(generator);
 }
 
+/* overloading runif, runif stand for (continuous) random
+ * uniform, it is PRNG that return a real number range
+ * from at_least to at_most.
+ */
 double runif(double at_least, double at_most) {
 	uniform_real_distribution<double> randu(at_least, at_most);
 	return randu(generator);
 }
 
 const double boundary[] = {-5.12, 5.12};
-int track_best = 0;
-int track_worst = 0;
 
+/* spherefun stand for sphere function that map from
+ * R^2 to R s.t. f(x,y) = x^2 + y^2
+ */
 double spherefun(double x, double y) {
 	return pow(x, 2.0) + pow(y, 2.0);
 }
@@ -76,8 +111,14 @@ vector<double> Individual::export_gene() {
 	return real_code;
 }
 
-/*
- * Population class have 3 private members :
+/* Define global variables track_best and track_worst
+ * as an index to track the worst and the best individual in
+ * a population for each generation t = 1, 2, ... , MAX_GENERATION.
+ */
+int track_best = 0;
+int track_worst = 0;
+
+/* Population class have 3 private members :
  * individuals are member of population
  * worst_indiv (worst individual), in arg max fun problem the worst in-
  * dividual is individual for which has the lowest fitness value. In
@@ -90,7 +131,7 @@ class Population {
 	Individual worst_indiv, best_indiv;
 	public:
 		Population();
-		Individual tournament(int t); // t >= 1 is size of tournament
+		Individual tournament(int t); // t >= 2 is size of tournament
 		void update_population(Individual offspring);
 		Individual export_worst();
 		Individual export_best();
@@ -100,8 +141,8 @@ class Population {
 };
 
 Population::Population() {
-	double curr_worst = -99999.0;
-	double curr_best = 99999.0;
+	double curr_worst = -numeric_limits<double>::infinity();
+	double curr_best = numeric_limits<double>::infinity();
 	int search_worst = 0;
 	int search_best = 0;
 	for (int indiv = 0; indiv < NPOPULATION; ++indiv) {
@@ -121,7 +162,7 @@ Population::Population() {
 	}
 }
 
-// int t >= 2 is total of tournament
+// int t >= 2 is total tournament
 Individual Population::tournament(int t) {
 	int get_num = runif(0, NPOPULATION - 1);
 	Individual curr_suvivor = individuals.at(get_num);
@@ -163,7 +204,7 @@ Individual Population::export_worst() {
 }
 
 void Population::print_population() {
-	cout << " Individual \t\t finess\n";
+	cout << " Individual \t\t fitness\n";
 	int counter = 0;
 	for (Individual creature: individuals) {
 		cout << counter << ". "; creature.print_gene();
@@ -188,12 +229,21 @@ void Population::print_best() {
 	cout << "\nFitness value: " << the_best.fitness() << endl;
 }
 
+/* steady_state_rcga contain 3 parameters that need
+ * to be tuned:
+ * conf_alpha is alpha value range from 0 to 1
+ * p_mutation is the probability that mutation will occur
+ * conf_beta is beta value range from 0 to 1
+ */
 Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta) {
 	Population population; // initial population
 	cout << "Initial population\n";
 	population.print_population();
 	// evolution
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
+		cout << nth_generation << "th generation: \n";
+		population.print_population();
+		cout << endl;
 		for (int epoch = 0; epoch < NPOPULATION; ++epoch) {
 			// tournament selection
 			vector<double> parent1 = population.tournament(2).export_gene();
@@ -213,7 +263,7 @@ Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_b
 					double p_mm = runif(0.0, 1.0);
 					double k = p_mm <= 0.5 ? (boundary[1] - offspring_gene) : (boundary[0] - offspring_gene);
 					double comp_delta = pow(k * (1 - runif(0.0, 1.0)), comp_gamma);
-					offspring_gene = offspring_gene + comp_delta;
+					offspring_gene += comp_delta;
 				}
 				offspring.push_back(offspring_gene);
 			}
@@ -235,7 +285,7 @@ int main(void) {
 	cout << "Initial solution : "; init_sol.print_gene();
 	cout << "\nFitness value : " << init_sol.fitness() << endl;
 
-	Individual obt_sol = steady_state_rcga(ALPHA, 0.78, BETA);
+	Individual obt_sol = steady_state_rcga(ALPHA, MUTATION_PROBABILITY, BETA);
 	cout << "\nObtained solution : "; obt_sol.print_gene();
 	cout << "\nFitness value : " << obt_sol.fitness() << endl;
 }
