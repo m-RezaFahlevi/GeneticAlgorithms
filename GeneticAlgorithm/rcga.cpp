@@ -43,16 +43,23 @@ double spherefun(double x, double y) {
 class Individual {
 	vector<double> real_code;
 	public:
-		Individual();
+		Individual(); // default constructor
+		Individual(vector<double>);
 		void print_gene();
 		double fitness();
+		vector<double> export_gene();
 };
 
+// default constructor
 Individual::Individual() {
 	for (int rcode = 0; rcode < N_DIMENSION; ++rcode) {
 		double gen = runif(boundary[0], boundary[1]);
 		real_code.push_back(gen);
 	}
+}
+
+Individual::Individual(vector<double> genes) {
+	real_code = genes;
 }
 
 void Individual::print_gene() {
@@ -63,6 +70,10 @@ void Individual::print_gene() {
 double Individual::fitness() {
 	double fitness_val = spherefun(real_code.at(0), real_code.at(1));
 	return fitness_val;
+}
+
+vector<double> Individual::export_gene() {
+	return real_code;
 }
 
 /*
@@ -81,6 +92,8 @@ class Population {
 		Population();
 		Individual tournament(int t); // t >= 1 is size of tournament
 		void update_population(Individual offspring);
+		Individual export_worst();
+		Individual export_best();
 		void print_population();
 		void print_worst();
 		void print_best();
@@ -141,6 +154,14 @@ void Population::update_population(Individual offspring) {
 	}
 }
 
+Individual Population::export_best() {
+	return best_indiv;
+}
+
+Individual Population::export_worst() {
+	return worst_indiv;
+}
+
 void Population::print_population() {
 	cout << " Individual \t\t finess\n";
 	int counter = 0;
@@ -167,33 +188,54 @@ void Population::print_best() {
 	cout << "\nFitness value: " << the_best.fitness() << endl;
 }
 
-int main(void) {
-	Individual individual;
-	Population population;
-	Individual parent1 = population.tournament(2);
-	Individual parent2 = population.tournament(2);
-
-	cout << "Parent1 : "; parent1.print_gene();
-	cout << "\nParent2 : "; parent2.print_gene();
+Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta) {
+	Population population; // initial population
+	cout << "Initial population\n";
+	population.print_population();
+	// evolution
+	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
+		for (int epoch = 0; epoch < NPOPULATION; ++epoch) {
+			// tournament selection
+			vector<double> parent1 = population.tournament(2).export_gene();
+			vector<double> parent2 = population.tournament(2).export_gene();
+			vector<double> offspring;
+			for (int i = 0; i < N_DIMENSION; ++i) {
+				// BLX-alpha recombination
+				double offspring_gene = parent1.at(i) - parent2.at(i);
+				offspring_gene = abs(offspring_gene);
+				double l_bound = max(boundary[0], min(parent1.at(i), parent2.at(i)) - (conf_alpha * offspring_gene));
+				double u_bound = min(boundary[1], max(parent1.at(i), parent2.at(i)) + conf_alpha * offspring_gene);
+				offspring_gene = runif(l_bound, u_bound);
+				// nonuniform mutation, 
+				double p_mut = runif(0.0, 1.0);
+				if (p_mut <= p_mutation) {
+					double comp_gamma = pow(1 - nth_generation / MAX_GENERATION, conf_beta);
+					double p_mm = runif(0.0, 1.0);
+					double k = p_mm <= 0.5 ? (boundary[1] - offspring_gene) : (boundary[0] - offspring_gene);
+					double comp_delta = pow(k * (1 - runif(0.0, 1.0)), comp_gamma);
+					offspring_gene = offspring_gene + comp_delta;
+				}
+				offspring.push_back(offspring_gene);
+			}
+			Individual an_offspring(offspring);
+			if (an_offspring.fitness() < population.export_worst().fitness()) {
+				population.update_population(an_offspring);
+			}
+		}
+	}
 	cout << endl;
-	
-	cout << rnorm(generator) << endl;
-	cout << boundary[0] << endl;
-	individual.print_gene();
-	cout << individual.fitness() << "\n\n";
-
+	cout << MAX_GENERATION << "th generation:\n";
 	population.print_population();
-	population.print_worst();
-	cout << "track best : " << track_best << endl;
-	cout << "track worst : " << track_worst << endl;
+	return population.export_best();
+}
 
-	Individual achild;
-	population.update_population(achild);
+int main(void) {
+	cout << "Steady state genetic algorithm to solve arg min spherefun(x,y) = x^2 + y^2\n";
+	Individual init_sol;
+	cout << "Initial solution : "; init_sol.print_gene();
+	cout << "\nFitness value : " << init_sol.fitness() << endl;
 
-	cout << "\noffspring : "; achild.print_gene();
-	cout << "\n";
-	population.print_population();
-	population.print_worst();
-	cout << "track best : " << track_best << endl;
-	cout << "track worst : " << track_worst << endl;
+	Individual obt_sol = steady_state_rcga(ALPHA, 0.78, BETA);
+	cout << "\nObtained solution : "; obt_sol.print_gene();
+	cout << "\nFitness value : " << obt_sol.fitness() << endl;
 }
