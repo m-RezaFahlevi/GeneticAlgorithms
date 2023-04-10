@@ -123,7 +123,7 @@ int track_best = 0;
 int track_worst = 0;
 
 /* Population class have 3 private members :
- * individuals are member of population
+ * individuals are member of population.
  * worst_indiv (worst individual), in arg max fun problem the worst in-
  * dividual is individual for which has the lowest fitness value. In
  * arg min fun problem, the worst individual is individual for which has
@@ -232,6 +232,12 @@ void Population::print_best() {
 	cout << "\nFitness value: " << the_best.fitness() << endl;
 }
 
+/* blx_alpha recombination have 3 parameters:
+ * gene1 is gene from parent 1.
+ * gene2 is gene from parent 2.
+ * conf_beta stand for configured beta, this 
+ * parameter need to be tuned, its value range from 0.0 to 1.0.
+ */
 double blx_alpha(double gene1, double gene2, double conf_alpha) {
 	double child_gene = gene1 - gene2;
 	child_gene = abs(child_gene);
@@ -241,6 +247,13 @@ double blx_alpha(double gene1, double gene2, double conf_alpha) {
 	return child_gene;
 }
 
+/* nonunif_mutation stand for nonuniform mutation, this function
+ * take 3 parameters:
+ * the_gene is gene that will be mutated.
+ * curr_generation stand for current generation.
+ * conf_beta stand for configured beta, this parameter need to
+ * be tuned, its value range from 0.0 to 1.0.
+ */
 double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) {
 	double comp_gamma = pow(1 - curr_generation / MAX_GENERATION, conf_beta);
 	double p_mm = runif(0.0, 1.0);
@@ -252,9 +265,7 @@ double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) 
 
 /* steady_state_rcga contain 3 parameters that need
  * to be tuned:
- * conf_alpha is alpha value range from 0 to 1
- * p_mutation is the probability that mutation will occur
- * conf_beta is beta value range from 0 to 1
+ * p_mutation is the probability that mutation will occur.
  * disp_evol is boolean, if disp_evol is true, then print the population
  * for each generation. If disp_evol is false, then only print population of
  * the the first and the last generation.
