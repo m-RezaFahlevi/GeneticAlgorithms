@@ -263,7 +263,7 @@ double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) 
 	return the_gene;
 }
 
-/* steady_state_rcga contain 3 parameters that need
+/* steady_state_rcga contain 2 parameters that need
  * to be tuned:
  * p_mutation is the probability that mutation will occur.
  * disp_evol is boolean, if disp_evol is true, then print the population
