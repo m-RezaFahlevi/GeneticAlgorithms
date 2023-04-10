@@ -232,6 +232,24 @@ void Population::print_best() {
 	cout << "\nFitness value: " << the_best.fitness() << endl;
 }
 
+double blx_alpha(double gene1, double gene2, double conf_alpha) {
+	double child_gene = gene1 - gene2;
+	child_gene = abs(child_gene);
+	double l_bound = max(boundary[0], min(gene1, gene2) - (conf_alpha * child_gene));
+	double u_bound = min(boundary[1], max(gene1, gene2) + conf_alpha * child_gene);
+	child_gene = runif(l_bound, u_bound);
+	return child_gene;
+}
+
+double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) {
+	double comp_gamma = pow(1 - curr_generation / MAX_GENERATION, conf_beta);
+	double p_mm = runif(0.0, 1.0);
+	double k = p_mm <= 0.5 ? (boundary[1] - the_gene) : (boundary[0] - the_gene);
+	double comp_delta = pow(k * (1 - runif(0.0, 1.0)), comp_gamma);
+	the_gene += comp_delta;
+	return the_gene;
+}
+
 /* steady_state_rcga contain 3 parameters that need
  * to be tuned:
  * conf_alpha is alpha value range from 0 to 1
@@ -241,7 +259,7 @@ void Population::print_best() {
  * for each generation. If disp_evol is false, then only print population of
  * the the first and the last generation.
  */
-Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta, bool disp_evol) {
+Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	Population population; // initial population
 	cout << "Initial population\n";
 	population.print_population();
@@ -259,19 +277,11 @@ Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_b
 			vector<double> offspring;
 			for (int i = 0; i < N_DIMENSION; ++i) {
 				// BLX-alpha recombination
-				double offspring_gene = parent1.at(i) - parent2.at(i);
-				offspring_gene = abs(offspring_gene);
-				double l_bound = max(boundary[0], min(parent1.at(i), parent2.at(i)) - (conf_alpha * offspring_gene));
-				double u_bound = min(boundary[1], max(parent1.at(i), parent2.at(i)) + conf_alpha * offspring_gene);
-				offspring_gene = runif(l_bound, u_bound);
+				double offspring_gene = blx_alpha(parent1.at(i), parent2.at(i), ALPHA);
 				// nonuniform mutation, 
 				double p_mut = runif(0.0, 1.0);
 				if (p_mut <= p_mutation) {
-					double comp_gamma = pow(1 - nth_generation / MAX_GENERATION, conf_beta);
-					double p_mm = runif(0.0, 1.0);
-					double k = p_mm <= 0.5 ? (boundary[1] - offspring_gene) : (boundary[0] - offspring_gene);
-					double comp_delta = pow(k * (1 - runif(0.0, 1.0)), comp_gamma);
-					offspring_gene += comp_delta;
+					offspring_gene = nonunif_mutation(offspring_gene, nth_generation, BETA);
 				}
 				offspring.push_back(offspring_gene);
 			}
@@ -307,7 +317,7 @@ int main(void) {
 	cout << "Initial solution : "; init_sol.print_gene();
 	cout << "\nFitness value : " << init_sol.fitness() << endl;
 
-	Individual obt_sol = steady_state_rcga(ALPHA, MUTATION_PROBABILITY, BETA, DISP_EVOL);
+	Individual obt_sol = steady_state_rcga(MUTATION_PROBABILITY, DISP_EVOL);
 	cout << "\nObtained solution : "; obt_sol.print_gene();
 	cout << "\nFitness value : " << obt_sol.fitness() << endl;
 }
