@@ -4,7 +4,7 @@
  * Author	: Muhammad Reza Fahlevi
  * Email	: muhammadrezafahlevi666@gmail.com
  * GitHub	: https://github.com/m-RezaFahlevi
- * Dated	: 9th January 2023
+ * Dated	: 10th April 2023
  *
  * Problem:
  * 	arg min spherefun(x, y)
@@ -35,9 +35,11 @@
 #include <bits/stdc++.h>
 #include <chrono>
 #define NPOPULATION 15
+#define NTOURNAMENT 2 // at least 2
 #define ALPHA 0.85
 #define MUTATION_PROBABILITY 0.78
 #define BETA 0.67
+#define DISP_EVOL false // boolean parameter
 #define MAX_GENERATION 500
 #define N_DIMENSION 2
 using namespace std;
@@ -98,8 +100,10 @@ Individual::Individual(vector<double> genes) {
 }
 
 void Individual::print_gene() {
+	cout << "(";
 	for (double gene: real_code)
-		cout << gene << " ";
+		cout << gene << ", ";
+	cout << "\b\b \b)";
 }
 
 double Individual::fitness() {
@@ -204,17 +208,16 @@ Individual Population::export_worst() {
 }
 
 void Population::print_population() {
-	cout << " Individual \t\t fitness\n";
 	int counter = 0;
 	for (Individual creature: individuals) {
-		cout << counter << ". "; creature.print_gene();
-		cout << "\t " << creature.fitness() << "\n";
+		cout << counter + 1 << ". f"; creature.print_gene();
+		cout << " = " << creature.fitness() << "\n";
 		counter++;
 	}
-	cout << "Worst individual : "; worst_indiv.print_gene();
-	cout << "\nFitness value : " << worst_indiv.fitness() << endl;
-	cout << "Best individual : "; best_indiv.print_gene();
-	cout << "\nFitness value : " << best_indiv.fitness() << endl;
+	cout << "Worst individual : " << track_worst + 1 << ". f"; worst_indiv.print_gene();
+	cout << " = " << worst_indiv.fitness() << endl;
+	cout << "Best individual : " << track_best + 1 << ". f"; best_indiv.print_gene();
+	cout << " = " << best_indiv.fitness() << endl;
 }
 
 void Population::print_worst() {
@@ -235,19 +238,21 @@ void Population::print_best() {
  * p_mutation is the probability that mutation will occur
  * conf_beta is beta value range from 0 to 1
  */
-Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta) {
+Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta, bool disp_evol) {
 	Population population; // initial population
 	cout << "Initial population\n";
 	population.print_population();
 	// evolution
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
-		cout << nth_generation << "th generation: \n";
-		population.print_population();
-		cout << endl;
+		if (disp_evol) {
+			cout << nth_generation << "th generation: \n";
+			population.print_population();
+			cout << endl;
+		}
 		for (int epoch = 0; epoch < NPOPULATION; ++epoch) {
 			// tournament selection
-			vector<double> parent1 = population.tournament(2).export_gene();
-			vector<double> parent2 = population.tournament(2).export_gene();
+			vector<double> parent1 = population.tournament(NTOURNAMENT).export_gene();
+			vector<double> parent2 = population.tournament(NTOURNAMENT).export_gene();
 			vector<double> offspring;
 			for (int i = 0; i < N_DIMENSION; ++i) {
 				// BLX-alpha recombination
@@ -279,13 +284,27 @@ Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_b
 	return population.export_best();
 }
 
+void prelude() {
+	cout << "Real code genetic algorithm to solve arg min spherefun(x,y) = x^2 + y^2\n";
+	cout << "Population\t: there are " << NPOPULATION << " individual\n";
+	cout << "Selection\t: tournament\n";
+	cout << "\t\t  tuned parameter NTOURNAMENT = " << NTOURNAMENT << endl;
+	cout << "Recombination\t: BLX-alpha\n";
+	cout << "\t\t  tuned parameter ALPHA = " << ALPHA << endl;
+	cout << "Mutation\t: non-uniform mutation\n";
+	cout << "\t\t  tuned parameter BETA = " << BETA << endl;
+	cout << "Evolution model\t: steady state\n";
+	cout << "Stop criterion\t: fixed number of iteration\n";
+	cout << "\t\t  tuned parameter MAX_GENERATION = " << MAX_GENERATION << "\n\n";
+}
+
 int main(void) {
-	cout << "Steady state genetic algorithm to solve arg min spherefun(x,y) = x^2 + y^2\n";
+	prelude();
 	Individual init_sol;
 	cout << "Initial solution : "; init_sol.print_gene();
 	cout << "\nFitness value : " << init_sol.fitness() << endl;
 
-	Individual obt_sol = steady_state_rcga(ALPHA, MUTATION_PROBABILITY, BETA);
+	Individual obt_sol = steady_state_rcga(ALPHA, MUTATION_PROBABILITY, BETA, DISP_EVOL);
 	cout << "\nObtained solution : "; obt_sol.print_gene();
 	cout << "\nFitness value : " << obt_sol.fitness() << endl;
 }
