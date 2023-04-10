@@ -237,6 +237,9 @@ void Population::print_best() {
  * conf_alpha is alpha value range from 0 to 1
  * p_mutation is the probability that mutation will occur
  * conf_beta is beta value range from 0 to 1
+ * disp_evol is boolean, if disp_evol is true, then print the population
+ * for each generation. If disp_evol is false, then only print population of
+ * the the first and the last generation.
  */
 Individual steady_state_rcga(double conf_alpha, double p_mutation, double conf_beta, bool disp_evol) {
 	Population population; // initial population
