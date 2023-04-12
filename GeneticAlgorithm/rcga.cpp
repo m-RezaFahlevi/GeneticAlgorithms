@@ -34,6 +34,7 @@
  */
 #include <bits/stdc++.h>
 #include <chrono>
+#include <ctime>
 #define NPOPULATION 50
 #define NTOURNAMENT 5 // at least 2
 #define ALPHA 0.85
@@ -83,6 +84,7 @@ class Individual {
 		Individual(); // default constructor
 		Individual(vector<double>);
 		void print_gene();
+		void write_gene(ofstream &readed_file);
 		double fitness();
 		vector<double> export_gene();
 };
@@ -104,6 +106,16 @@ void Individual::print_gene() {
 	for (double gene: real_code)
 		cout << gene << ", ";
 	cout << "\b\b \b)";
+}
+
+void Individual::write_gene(ofstream &readed_file) {
+	if (readed_file.is_open()) {
+		readed_file << "(";
+		for (double gene: real_code)
+			readed_file << gene << ", ";
+		readed_file << "\b\b \b)";
+	} else
+		cout << "Unable to open a file\n";
 }
 
 double Individual::fitness() {
@@ -140,6 +152,7 @@ class Population {
 		Individual export_worst();
 		Individual export_best();
 		void print_population();
+		void write_population(ofstream &readed_file);
 		void print_worst();
 		void print_best();
 };
@@ -220,6 +233,22 @@ void Population::print_population() {
 	cout << " = " << best_indiv.fitness() << endl;
 }
 
+void Population::write_population(ofstream &readed_file) {
+	if (readed_file.is_open()) {
+		int counter = 0;
+		for (Individual creature: individuals) {
+			readed_file << counter + 1 << ". f"; creature.write_gene(readed_file);
+			readed_file << " = " << creature.fitness() << "\n";
+			counter++;
+		}
+		readed_file << "Worst individual : " << track_worst + 1 << ". f"; worst_indiv.write_gene(readed_file);
+		readed_file << " = " << worst_indiv.fitness() << endl;
+		readed_file << "Best individual : " << track_best + 1 << ". f"; best_indiv.write_gene(readed_file);
+		readed_file << " = " << best_indiv.fitness() << endl;
+	} else
+		cout << "Unable to open a file\n";
+}
+
 void Population::print_worst() {
 	Individual the_worst = individuals.at(track_worst);
 	cout << "Worst individual: "; the_worst.print_gene();
@@ -263,6 +292,23 @@ double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) 
 	return the_gene;
 }
 
+void prelude_txt(ofstream &readed_file) {
+	if (readed_file.is_open()) {
+		readed_file << "Real code genetic algorithm to solve arg min spherefun(x,y) = x^2 + y^2\n";
+		readed_file << "Population\t: there are " << NPOPULATION << " individual\n";
+		readed_file << "Selection\t: tournament\n";
+		readed_file << "\t\t  tuned parameter NTOURNAMENT = " << NTOURNAMENT << endl;
+		readed_file << "Recombination\t: BLX-alpha\n";
+		readed_file << "\t\t  tuned parameter ALPHA = " << ALPHA << endl;
+		readed_file << "Mutation\t: non-uniform mutation\n";
+		readed_file << "\t\t  tuned parameter BETA = " << BETA << endl;
+		readed_file << "Evolution model\t: steady state\n";
+		readed_file << "Stop criterion\t: fixed number of iteration\n";
+		readed_file << "\t\t  tuned parameter MAX_GENERATION = " << MAX_GENERATION << "\n\n";
+	} else
+		cout << "unable to open\n";
+}
+
 /* steady_state_rcga contain 3 parameters that need
  * to be tuned:
  * p_mutation is the probability that mutation will occur.
@@ -271,15 +317,26 @@ double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) 
  * the the first and the last generation.
  */
 Individual steady_state_rcga(double p_mutation, bool disp_evol) {
+	auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	string fname = "log_output/log";
+	fname  += to_string(in_time_t) + ".txt";
+	ofstream cout_txt;
+	cout_txt.open(fname); // create log_output.txt file
+	prelude_txt(cout_txt);
 	Population population; // initial population
 	cout << "Initial population\n";
+	cout_txt << "Initial population\n";
 	population.print_population();
+	population.write_population(cout_txt);
 	// evolution
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
 		if (disp_evol) {
 			cout << nth_generation << "th generation: \n";
 			population.print_population();
+			population.write_population(cout_txt);
 			cout << endl;
+			cout_txt << endl;
 		}
 		for (int epoch = 0; epoch < NPOPULATION; ++epoch) {
 			// tournament selection
@@ -303,8 +360,12 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 		}
 	}
 	cout << endl;
+	cout_txt << endl;
 	cout << MAX_GENERATION << "th generation:\n";
+	cout_txt << MAX_GENERATION << "th generation:\n";
 	population.print_population();
+	population.write_population(cout_txt);
+	cout_txt.close();
 	return population.export_best();
 }
 
