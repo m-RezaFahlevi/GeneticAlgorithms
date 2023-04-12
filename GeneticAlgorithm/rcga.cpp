@@ -318,7 +318,7 @@ void prelude_txt(ofstream &readed_file) {
  */
 Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 	string fname = "log_output/log";
 	fname  += to_string(in_time_t) + ".txt";
 	ofstream cout_txt;
