@@ -34,8 +34,8 @@
  */
 #include <bits/stdc++.h>
 #include <chrono>
-#define NPOPULATION 15
-#define NTOURNAMENT 2 // at least 2
+#define NPOPULATION 50
+#define NTOURNAMENT 5 // at least 2
 #define ALPHA 0.85
 #define MUTATION_PROBABILITY 0.78
 #define BETA 0.67
@@ -263,7 +263,7 @@ double nonunif_mutation(double the_gene, int curr_generation, double conf_beta) 
 	return the_gene;
 }
 
-/* steady_state_rcga contain 2 parameters that need
+/* steady_state_rcga contain 3 parameters that need
  * to be tuned:
  * p_mutation is the probability that mutation will occur.
  * disp_evol is boolean, if disp_evol is true, then print the population
