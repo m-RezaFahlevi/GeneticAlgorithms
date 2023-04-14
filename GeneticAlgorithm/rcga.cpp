@@ -34,7 +34,6 @@
  */
 #include <bits/stdc++.h>
 #include <chrono>
-#include <ctime>
 #define NPOPULATION 50
 #define NTOURNAMENT 5 // at least 2
 #define ALPHA 0.85
@@ -348,15 +347,13 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 				double offspring_gene = blx_alpha(parent1.at(i), parent2.at(i), ALPHA);
 				// nonuniform mutation, 
 				double p_mut = runif(0.0, 1.0);
-				if (p_mut <= p_mutation) {
+				if (p_mut <= p_mutation)
 					offspring_gene = nonunif_mutation(offspring_gene, nth_generation, BETA);
-				}
 				offspring.push_back(offspring_gene);
 			}
 			Individual an_offspring(offspring);
-			if (an_offspring.fitness() < population.export_worst().fitness()) {
+			if (an_offspring.fitness() < population.export_worst().fitness())
 				population.update_population(an_offspring);
-			}
 		}
 	}
 	cout << endl;
