@@ -328,7 +328,7 @@ void prelude_txt(ofstream &readed_file) {
 		cout << "unable to open\n";
 }
 
-/* steady_state_rcga contain 3 parameters that need
+/* steady_state_rcga contain 2 parameters that need
  * to be tuned:
  * p_mutation is the probability that mutation will occur.
  * disp_evol is boolean, if disp_evol is true, then print the population
