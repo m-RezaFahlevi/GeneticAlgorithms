@@ -1,4 +1,4 @@
-/* Real Code Genetic Algorithm for
+/* Real Coded Genetic Algorithm for
  * Solving Real Parameter Optimization Problem
  *
  * Author	: Muhammad Reza Fahlevi
