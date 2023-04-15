@@ -338,11 +338,19 @@ void prelude_txt(ofstream &readed_file) {
 Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
-	string fname = "log_output/log";
+	string fname = "log_output/log"; // file name
+	string dname = "data/obt_data"; // dname stand for data name
 	fname  += to_string(in_time_t) + ".txt";
+	dname += to_string(in_time_t) + ".csv";
 	ofstream cout_txt;
+	ofstream cout_csv;
 	cout_txt.open(fname); // create log_output.txt file
+	cout_csv.open(dname); // create obt_data.csv file
 	prelude_txt(cout_txt);
+	// create columns name for cout_csv
+	// fitval stand for fitness value, it's real number
+	// is_trans stand for is transition, it's boolean (binary) value
+	cout_csv << "fitval, " << "is_trans\n";
 	Population population; // initial population
 	cout << "Initial population\n";
 	cout_txt << "Initial population\n";
@@ -372,7 +380,9 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 				offspring.push_back(offspring_gene);
 			}
 			Individual an_offspring(offspring);
-			if (an_offspring.fitness() < population.export_worst().fitness())
+			bool is_acc = an_offspring.fitness() < population.export_worst().fitness();
+			cout_csv << an_offspring.fitness() << ", " << is_acc << endl;
+			if (is_acc)
 				population.update_population(an_offspring);
 		}
 	}
@@ -383,6 +393,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	population.print_population();
 	population.write_population(cout_txt);
 	cout_txt.close();
+	cout_csv.close();
 	return population.export_best();
 }
 
