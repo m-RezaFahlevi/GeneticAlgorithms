@@ -1,5 +1,10 @@
 # Genetic Algorithm
 ___
+[![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
+<p align="center">
+<img alt="arg min spherefun"
+     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/obt_data1681577275.gif"/>
+</p>
 
 The main parts of this repository is in folder GeneticAlgorithm. SteadyStateGeneticAlgorithm.R and steady_state_genetic_algorithm.py are the main source code. **Real-Parameter Optimazation Problem** are supposed to be solved in this repository, at least for now.
 
