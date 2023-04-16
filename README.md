@@ -1,16 +1,16 @@
 # Genetic Algorithm
 ___
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
-<p align="center">
-<img alt="arg min spherefun"
-     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/obt_data1681577275.gif"/>
-</p>
 
 The main parts of this repository is in folder GeneticAlgorithm. SteadyStateGeneticAlgorithm.R and steady_state_genetic_algorithm.py are the main source code. **Real-Parameter Optimazation Problem** are supposed to be solved in this repository, at least for now.
 
-## SteadyStateGeneticAlgorithm.R
+<p align="center">
+<img alt="arg min spherefun"
+     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/obt_data1681577275.gif"/>
+     <caption><br/>Solving $\arg \min_{x_1,x_2\in\mathbb{R}^2}\phi(x_1, x_2) = x_1^2 + x_2^2$</caption>
+</p>
 
-![](https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/www/GeneticAlgorithminRStudio.png)
+## SteadyStateGeneticAlgorithm.R
 
 For file SteadyStateGeneticAlgorithm.R, there are 2 library must be installed first, **ggplot2 and dplyr**. These library can be installed via RStudio or execute following code in your R's terminal.
 
