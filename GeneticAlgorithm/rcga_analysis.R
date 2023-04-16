@@ -1,11 +1,19 @@
 library(dplyr)
 library(ggplot2)
+library(gganimate)
 library(readr)
 
-# rcga_df <- read_csv("data/obt_data1681577279.csv", 
+# rcga_df <- read_csv("data/obt_data1681577279.csv",
 #                                col_types = cols(is_trans = col_logical()))
-rcga_df <- obt_data1681577275 <- read_csv("data/obt_data1681577275.csv", 
-                                          col_types = cols(is_trans = col_logical()))
+# rcga_df <- obt_data1681577275 <- read_csv("data/obt_data1681577275.csv", 
+#                                           col_types = cols(is_trans = col_logical()))
+# rcga_df <- read_csv("data/obt_data1681608301.csv", 
+#                                col_types = cols(is_trans = col_logical()))
+# rcga_df <- read_csv("data/obt_data1681609166.csv", 
+#                                col_types = cols(is_trans = col_logical()))
+rcga_df <- read_csv("data/obt_data1681611939.csv", 
+                               col_types = cols(is_trans = col_logical()))
+
 wrangling_data <- function(obt_data) {
     n_iter <- seq_len(dim(obt_data)[1])
     obt_data[,3] <- n_iter
@@ -52,20 +60,58 @@ rcga_acc <- acc_data(rcga_df)
 summary(rcga_acc)
 View(rcga_acc)
 
+datname = "obt_data1681611939.csv"
+
 ggplot(rcga_acc[1:200,], aes(iter_num, fitval)) +
     geom_point(color = "darkblue", size = 0.7) +
     geom_line(color = "blue") +
     ggtitle(
         label = "Real-Coded Genetic Algorithm",
-        subtitle = "Data : obt_data1681577279.csv"
+        subtitle = datname
     ) + xlab("nth-evaluation") +
     ylab("fitness") +
     theme_bw()
 
-rcga_reg <- rcga_acc[1:200,]
+rcga_reg <- rcga_acc[1:300,]
+
 
 ggplot(rcga_reg, aes(iter_num, fitval)) +
-    geom_point(color = "darkblue", size = 0.8) +
-    stat_smooth(formula = y ~ s(x, bs="cs"), method = "gam") +
+        geom_point(color = "darkblue", size = 0.8) +
+        ggtitle(
+            label = "Real-Coded Genetic Algorithm",
+            subtitle = datname
+        ) +
+        xlab("nth-evaluation") + ylab("fitness") +
+        theme_bw()
+
+ggplot(rcga_reg, aes(iter_num, fitval)) +
+    geom_line(color = "blue") +
+    ggtitle(
+        label = "Real-Coded Genetic Algorithm",
+        subtitle = datname
+    ) +
     xlab("nth-evaluation") + ylab("fitness") +
     theme_bw()
+    
+ggplot(rcga_reg, aes(iter_num, fitval)) +
+        geom_point(color = "darkblue", size = 0.8) +
+        stat_smooth(formula = y ~ s(x, bs="cs"), method = "gam") +
+        ggtitle(
+            label = "Real-Coded Genetic Algorithm",
+            subtitle = datname
+        ) +
+        xlab("nth-evaluation") + ylab("fitness") +
+        theme_bw()
+    
+rcga_gif <- ggplot(rcga_reg, aes(iter_num, fitval)) +
+        geom_point(color = "darkblue", size = 0.8) +
+        geom_line(color = "blue") +
+        ggtitle(
+            label = "Real-Coded Genetic Algorithm",
+            subtitle = datname
+        ) +
+        xlab("nth-evaluation") + ylab("fitness") +
+        theme_bw() +
+    transition_manual(iter_num, cumulative = TRUE)
+rcga_gif
+anim_save("visualization/obt_data1681611939.gif")

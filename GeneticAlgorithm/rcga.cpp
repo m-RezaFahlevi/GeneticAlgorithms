@@ -59,7 +59,7 @@
 #define ALPHA 0.85
 #define MUTATION_PROBABILITY 0.78
 #define BETA 0.67
-#define DISP_EVOL false // boolean parameter
+#define DISP_EVOL true // boolean parameter
 #define MAX_GENERATION 500
 #define N_DIMENSION 2
 using namespace std;
@@ -88,7 +88,7 @@ double runif(double at_least, double at_most) {
 	return randu(generator);
 }
 
-const double boundary[] = {-5.12, 5.12};
+const double boundary[] = {-10.0, 10.0}; // original [-5.12, 5.12]
 
 /* spherefun stand for sphere function that map from
  * R^2 to R s.t. f(x,y) = x^2 + y^2
@@ -360,6 +360,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
 		if (disp_evol) {
 			cout << nth_generation << "th generation: \n";
+			cout_txt << nth_generation << "th generation:\n";
 			population.print_population();
 			population.write_population(cout_txt);
 			cout << endl;
