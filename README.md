@@ -12,6 +12,8 @@ The main parts of this repository is in folder GeneticAlgorithm. SteadyStateGene
 
 ## SteadyStateGeneticAlgorithm.R
 
+![](https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/www/GeneticAlgorithminRStudio.png)
+
 For file SteadyStateGeneticAlgorithm.R, there are 2 library must be installed first, **ggplot2 and dplyr**. These library can be installed via RStudio or execute following code in your R's terminal.
 
 ```{r}
