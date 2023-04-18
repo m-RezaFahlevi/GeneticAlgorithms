@@ -350,7 +350,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	// create columns name for cout_csv
 	// fitval stand for fitness value, it's real number
 	// is_trans stand for is transition, it's boolean (binary) value
-	cout_csv << "fitval, " << "is_trans\n";
+	cout_csv << "fitval, " << "generation, " << "is_trans\n";
 	Population population; // initial population
 	cout << "Initial population\n";
 	cout_txt << "Initial population\n";
@@ -382,7 +382,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 			}
 			Individual an_offspring(offspring);
 			bool is_acc = an_offspring.fitness() < population.export_worst().fitness();
-			cout_csv << an_offspring.fitness() << ", " << is_acc << endl;
+			cout_csv << an_offspring.fitness() << ", " << nth_generation + 1 << ", " << is_acc << endl;
 			if (is_acc)
 				population.update_population(an_offspring);
 		}
