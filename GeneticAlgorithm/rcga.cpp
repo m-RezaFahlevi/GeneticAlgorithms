@@ -4,7 +4,7 @@
  * Author	: Muhammad Reza Fahlevi
  * Email	: muhammadrezafahlevi666@gmail.com
  * GitHub	: https://github.com/m-RezaFahlevi
- * Dated	: 10th April 2023
+ * Dated	: 20th April 2023
  *
  * Problem:
  * 	arg min spherefun(x, y)
@@ -64,6 +64,30 @@
 #define N_DIMENSION 2
 using namespace std;
 
+void export_metadata(string fjson_name, int fID) {
+	ofstream cout_json;
+	cout_json.open(fjson_name);
+	if (cout_json.is_open()) {
+		cout_json << "{\n";
+		cout_json << "\t\"expID\":" << fID << "," << endl;
+		cout_json << "\t\"population\":" << NPOPULATION << "," << endl;
+		cout_json << "\t\"selection\":" << "\"tournament\"," << endl;
+		cout_json << "\t\"ntournament\":" << NTOURNAMENT << "," << endl;
+		cout_json << "\t\"recombination\":" << "\"BLX-alpha\"," << endl;
+		cout_json << "\t\"alpha\":" << ALPHA << "," << endl;
+		cout_json << "\t\"mutation\":" << "\"nonuniform mutation\"," << endl;
+		cout_json << "\t\"beta\":" << BETA << "," << endl;
+		cout_json << "\t\"evolutionModel\":\"steady state\"," << endl;
+		cout_json << "\t\"stopCriterion\":\"fixed number of iteration\"," << endl;
+		cout_json << "\t\"maxGeneration\":" << MAX_GENERATION << "," << endl;
+		string is_disp_evol = DISP_EVOL ? "true" : "false";
+		cout_json << "\t\"displayEvolution\":" << is_disp_evol << endl;
+		cout_json << "}";
+	} else
+		cout << "Unable to open a .json files.\n";
+	cout_json.close();
+}
+
 /* Set seed that will be used as a generator in
  * pseudo random number generator (PRNG) function.
  */
@@ -104,6 +128,7 @@ class Individual {
 		Individual(vector<double>);
 		void print_gene();
 		void write_gene(ofstream &readed_file);
+		void write_csvgene(ofstream &readed_file);
 		double fitness();
 		vector<double> export_gene();
 };
@@ -133,6 +158,18 @@ void Individual::write_gene(ofstream &readed_file) {
 		for (double gene: real_code)
 			readed_file << gene << ", ";
 		readed_file << "\b\b \b)";
+	} else
+		cout << "Unable to open a file\n";
+}
+
+/* write_csvgene take one arguments --readed_file--
+ * as a parameters, i.e.,  an address of ofstream object
+ * write_csvgene will write x1, x2, to a .csv file
+ */
+void Individual::write_csvgene(ofstream &readed_file) {
+	if (readed_file.is_open()) {
+		for (double gene: real_code)
+			readed_file << gene << ", ";
 	} else
 		cout << "Unable to open a file\n";
 }
@@ -172,6 +209,7 @@ class Population {
 		Individual export_best();
 		void print_population();
 		void write_population(ofstream &readed_file);
+		void write_csvpopulation(ofstream &readed_file, int curr_gener);
 		void print_worst();
 		void print_best();
 };
@@ -268,6 +306,16 @@ void Population::write_population(ofstream &readed_file) {
 		cout << "Unable to open a file\n";
 }
 
+void Population::write_csvpopulation(ofstream &readed_file, int curr_gener) {
+	if (readed_file.is_open()) {
+		for (Individual creature: individuals) {
+			creature.write_csvgene(readed_file);
+			readed_file << creature.fitness() << ", " << curr_gener << endl;
+		}
+	} else
+		cout << "Unable to open a file\n";
+}
+
 void Population::print_worst() {
 	Individual the_worst = individuals.at(track_worst);
 	cout << "Worst individual: "; the_worst.print_gene();
@@ -339,18 +387,33 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	auto now = chrono::system_clock::now();
 	auto in_time_t = chrono::system_clock::to_time_t(now);
 	string fname = "log_output/log"; // file name
-	string dname = "data/obt_data"; // dname stand for data name
+	string dname = "data/progression/logprog"; // logprog stand for log of progression
+	string gname = "data/generation/loggen"; // loggen stand for log of generation
+	string json_name = "data/meta/logexp"; // logexp stand for log of experiment
 	fname  += to_string(in_time_t) + ".txt";
 	dname += to_string(in_time_t) + ".csv";
+	gname += to_string(in_time_t) + ".csv";
+	json_name += to_string(in_time_t) + ".json";
 	ofstream cout_txt;
 	ofstream cout_csv;
+	ofstream cout_gcsv; // gcsv stand for generation csv
 	cout_txt.open(fname); // create log_output.txt file
 	cout_csv.open(dname); // create obt_data.csv file
+	cout_gcsv.open(gname); // create logg.csv file
+	export_metadata(json_name, in_time_t); // create logexp.json file
 	prelude_txt(cout_txt);
 	// create columns name for cout_csv
 	// fitval stand for fitness value, it's real number
 	// is_trans stand for is transition, it's boolean (binary) value
 	cout_csv << "fitval, " << "generation, " << "is_trans\n";
+	// Create columns name for cout_gcsv
+	// e1, e2, ... , en are bases
+	// nth_gen stand for nth generation
+	for (int nth_base = 0; nth_base < N_DIMENSION; ++nth_base) {
+		string strbase = "e";
+		strbase += to_string(nth_base + 1);
+		cout_gcsv << strbase << ", ";
+	} cout_gcsv << "fitval, generation" << endl;
 	Population population; // initial population
 	cout << "Initial population\n";
 	cout_txt << "Initial population\n";
@@ -358,6 +421,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	population.write_population(cout_txt);
 	// evolution
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
+		population.write_csvpopulation(cout_gcsv, nth_generation + 1);
 		if (disp_evol) {
 			cout << nth_generation << "th generation: \n";
 			cout_txt << nth_generation << "th generation:\n";
@@ -370,6 +434,10 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 			// tournament selection
 			vector<double> parent1 = population.tournament(NTOURNAMENT).export_gene();
 			vector<double> parent2 = population.tournament(NTOURNAMENT).export_gene();
+			// construction of the offspring
+			// from obtained parent1 and parent2
+			// by using blx-alpha as recombination operator
+			// and nonuniform mutation as mutation operator
 			vector<double> offspring;
 			for (int i = 0; i < N_DIMENSION; ++i) {
 				// BLX-alpha recombination
@@ -395,6 +463,7 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 	population.write_population(cout_txt);
 	cout_txt.close();
 	cout_csv.close();
+	cout_gcsv.close();
 	return population.export_best();
 }
 
