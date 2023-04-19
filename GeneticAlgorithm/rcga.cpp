@@ -336,8 +336,8 @@ void prelude_txt(ofstream &readed_file) {
  * the the first and the last generation.
  */
 Individual steady_state_rcga(double p_mutation, bool disp_evol) {
-	auto now = std::chrono::system_clock::now();
-	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	auto now = chrono::system_clock::now();
+	auto in_time_t = chrono::system_clock::to_time_t(now);
 	string fname = "log_output/log"; // file name
 	string dname = "data/obt_data"; // dname stand for data name
 	fname  += to_string(in_time_t) + ".txt";
