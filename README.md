@@ -6,7 +6,9 @@ The main parts of this repository is in folder GeneticAlgorithm. SteadyStateGene
 
 <p align="center">
 <img alt="arg min spherefun"
-     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/obt_data1681577275.gif"/>
+     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/logprog1681938132.gif"/><span/>
+<img alt="population"
+     src="https://github.com/m-RezaFahlevi/GeneticAlgorithms/blob/main/GeneticAlgorithm/visualization/loggen1681938132.gif"/>
      <caption><br/>Solving $\arg \min_{x_1,x_2\in\mathbb{R}^2}\phi(x_1, x_2) = x_1^2 + x_2^2$</caption>
 </p>
 
