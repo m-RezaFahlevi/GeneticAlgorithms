@@ -53,13 +53,16 @@
  * SOFTWARE.
  */
 #include <bits/stdc++.h>
+#include <sys/ioctl.h>
+#include <iomanip>
+#include <unistd.h>
 #include <chrono>
 #define NPOPULATION 50
 #define NTOURNAMENT 5 // at least 2
 #define ALPHA 0.85
 #define MUTATION_PROBABILITY 0.78
 #define BETA 0.67
-#define DISP_EVOL true // boolean parameter
+#define DISP_EVOL false // boolean parameter
 #define MAX_GENERATION 500
 #define N_DIMENSION 2
 using namespace std;
@@ -415,12 +418,31 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 		cout_gcsv << strbase << ", ";
 	} cout_gcsv << "fitval, generation" << endl;
 	Population population; // initial population
-	cout << "Initial population\n";
+	cout << "\nInitial population\n";
 	cout_txt << "Initial population\n";
 	population.print_population();
 	population.write_population(cout_txt);
+	// get the terminal's window size
+	winsize terminal_window;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_window);
+	int bar_length = terminal_window.ws_col - 20;
 	// evolution
+	cout << "\nEvolution...\n";
 	for (int nth_generation = 0; nth_generation < MAX_GENERATION; ++nth_generation) {
+		// create a progression bar
+		double curr_prog = double(nth_generation) / double(MAX_GENERATION);
+		cout << "[";
+		for (int curs_loc = 0; curs_loc < bar_length; ++curs_loc) {
+			int curr_prog_position = round(curr_prog * 100);
+			if (curs_loc < curr_prog_position)
+				cout << "█";
+			else if (curs_loc == curr_prog_position)
+				cout << "🧬";
+			else
+				cout << " ";
+		}
+		cout << "] " << int(curr_prog * 100.0) << "%\r";
+		cout.flush();
 		population.write_csvpopulation(cout_gcsv, nth_generation + 1);
 		if (disp_evol) {
 			cout << nth_generation << "th generation: \n";
@@ -455,12 +477,25 @@ Individual steady_state_rcga(double p_mutation, bool disp_evol) {
 				population.update_population(an_offspring);
 		}
 	}
+	cout << "\r[";
+	cout.flush();
+	// create progression bar 100% complete
+	for (int curs_loc = 0; curs_loc <= bar_length; ++curs_loc) {
+		if (curs_loc <= bar_length) cout << "█";
+	}
+	cout << "] 100%" << endl;
 	cout << endl;
 	cout_txt << endl;
 	cout << MAX_GENERATION << "th generation:\n";
 	cout_txt << MAX_GENERATION << "th generation:\n";
 	population.print_population();
 	population.write_population(cout_txt);
+	cout << "\nGenerate : \n";
+	cout << " ✔ " << fname << endl;
+	cout << " ✔ " << dname << endl;
+	cout << " ✔ " << gname << endl;
+	cout << " ✔ " << json_name << endl;
+
 	cout_txt.close();
 	cout_csv.close();
 	cout_gcsv.close();
